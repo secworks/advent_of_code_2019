@@ -35,6 +35,10 @@ def cpu(state):
     OP_MUL  = 2
     OP_IN   = 3
     OP_OUT  = 4
+    OP_JNZ  = 5
+    OP_JZ   = 6
+    OP_LT   = 7
+    OP_EQ   = 8
     OP_HALT = 99
 
     ip = 0
@@ -80,6 +84,50 @@ def cpu(state):
             opa = read_operand(ip + 1, mode_a, state)
             print("Output: %d" % (opa))
             ip += 2
+
+
+        if op == OP_JNZ:
+            opa = read_operand(ip + 1, mode_a, state)
+            opb = read_operand(ip + 2, mode_b, state)
+
+            if opa != 0:
+                ip = opb
+            else:
+                ip += 4
+
+
+        if op == OP_JZ:
+            opa = read_operand(ip + 1, mode_a, state)
+            opb = read_operand(ip + 2, mode_b, state)
+
+            if opa == 0:
+                ip = opb
+            else:
+                ip += 4
+
+
+        if op == OP_LT:
+            opa = read_operand(ip + 1, mode_a, state)
+            opb = read_operand(ip + 2, mode_b, state)
+            opc = read_operand(ip + 3, mode_c, state)
+
+            if opa < opb:
+                state[opc] = 1
+            else:
+                state[opc] = 0
+            ip += 5
+
+
+        if op == OP_EQ:
+            opa = read_operand(ip + 1, mode_a, state)
+            opb = read_operand(ip + 2, mode_b, state)
+            opc = read_operand(ip + 3, mode_c, state)
+
+            if opa == opb:
+                state[opc] = 1
+            else:
+                state[opc] = 0
+            ip += 5
 
 
         if op == OP_HALT:
