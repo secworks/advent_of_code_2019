@@ -11,17 +11,21 @@ TEST_program = [3,225,1,225,6,6,1100,1,238,225,104,0,1102,7,85,225,1102,67,12,22
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
+def dp(s):
+    if DEBUG:
+        print(s)
+
+#-------------------------------------------------------------------
+#-------------------------------------------------------------------
 def read_operand(addr, mode, state):
     ind_addr = state[addr]
 
     if mode:
         op = state[addr]
-        if DEBUG:
-            print("operand = %d. Immediate read from address %d" % (op, addr))
+        dp("operand = %d. Immediate read from address %d" % (op, addr))
     else:
         op = state[ind_addr]
-        if DEBUG:
-            print("operand = %d. Indirect read from address %d" % (op, ind_addr))
+        dp("operand = %d. Indirect read from address %d" % (op, ind_addr))
     return op
 
 
@@ -48,89 +52,105 @@ def cpu(state):
         # Instruction fetch and decode to get op and operand modes.
         instr = state[ip]
         op = instr % 100
+        dp("ip: %d, instr: %d" % (ip, instr))
         mode_a = int(instr / 100) & 0x01
         mode_b = int(instr / 1000)  & 0x01
         mode_c = int(instr / 10000) & 0x01
-        if DEBUG:
-            print("ip = %d, instr = %d" % (ip, instr))
-            print("op = %d, mode_a = %d, mode_b = %d, mode_c = %d" % (op, mode_a, mode_b, mode_c))
-
 
         # Execute
         if op == OP_ADD:
+            dp("\nOP_ADD")
             opa = read_operand(ip + 1, mode_a, state)
             opb = read_operand(ip + 2, mode_b, state)
             dst = state[ip + 3]
+            dp("Writing %d to state[%d]" % (opa + opb, dst))
             state[dst] = opa + opb
             ip += 4
 
 
         if op == OP_MUL:
+            dp("\nOP_MUL")
             opa = read_operand(ip + 1, mode_a, state)
             opb = read_operand(ip + 2, mode_b, state)
             dst = state[ip + 3]
+            dp("Writing %d to state[%d]" % (opa * opb, dst))
             state[dst] = opa * opb
             ip += 4
 
 
         if op == OP_IN:
+            dp("\nOP_IN")
             i = int(input("Input: "))
             dst = state[ip + 1]
             state[dst] = i
+            dp("Got %d. Stored to state[%d]" % (i, dst))
             ip += 2
 
 
         if op == OP_OUT:
+            dp("\nOP_OUT")
             opa = read_operand(ip + 1, mode_a, state)
             print("Output: %d" % (opa))
             ip += 2
 
 
         if op == OP_JNZ:
+            dp("\nOP_JNZ")
             opa = read_operand(ip + 1, mode_a, state)
             opb = read_operand(ip + 2, mode_b, state)
-
             if opa != 0:
+                dp("opa != 0, jumping to addr %d" % (opb))
                 ip = opb
             else:
-                ip += 4
+                dp("opa == 0, moving to next instruction")
+                ip += 3
 
 
         if op == OP_JZ:
+            dp("\nOP_JZ")
             opa = read_operand(ip + 1, mode_a, state)
             opb = read_operand(ip + 2, mode_b, state)
 
             if opa == 0:
                 ip = opb
+                dp("opa == 0, jumping to addr %d" % (opb))
             else:
-                ip += 4
+                dp("opa != 0, moving to next instruction")
+                ip += 3
 
 
         if op == OP_LT:
+            dp("\nOP_LT")
             opa = read_operand(ip + 1, mode_a, state)
             opb = read_operand(ip + 2, mode_b, state)
-            opc = read_operand(ip + 3, mode_c, state)
+            dst = state[ip + 3]
 
             if opa < opb:
-                state[opc] = 1
+                state[dst] = 1
+                dp("opa < opb. Writing 1 to state[%d]" % (dst))
             else:
-                state[opc] = 0
-            ip += 5
+                state[dst] = 0
+                dp("opa >= opb. Writing 0 to state[%d]" % (dst))
+            ip += 4
 
 
         if op == OP_EQ:
+            dp("\nOP_EQ")
             opa = read_operand(ip + 1, mode_a, state)
             opb = read_operand(ip + 2, mode_b, state)
-            opc = read_operand(ip + 3, mode_c, state)
+            dst = state[ip + 3]
 
             if opa == opb:
-                state[opc] = 1
+                state[dst] = 1
+                dp("opa == opb. Writing 1 to state[%d]" % (dst))
             else:
-                state[opc] = 0
-            ip += 5
+                state[dst] = 0
+                dp("opa != opb. Writing 0 to state[%d]" % (dst))
+            ip += 4
 
 
         if op == OP_HALT:
+            dp("\nOP_HALT")
             done = True
 
     return state
@@ -161,14 +181,59 @@ def problem1():
 
     else:
         print("Running TEST program.")
-        res_state = cpu(TEST_program)
+        res_state = cpu(TEST_program[:])
         print("TEST program done.")
         print("")
 
+
 #-------------------------------------------------------------------
+# problem2
+# Provide 5 as input.
 #-------------------------------------------------------------------
 def problem2():
     print("Problem 2")
+    # Test of EQ and LT
+    test2_1 = [3,9,8,9,10,9,4,9,99,-1,8]
+    test2_2 = [3,9,7,9,10,9,4,9,99,-1,8]
+    test2_3 = [3,3,1108,-1,8,3,4,3,99]
+    test2_4 = [3,3,1107,-1,8,3,4,3,99]
+
+    # Test of JZ and JNZ
+    test2_5 = [3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9]
+
+    TEST = False
+
+    if TEST:
+        print("Running test2_1")
+        res_state = cpu(test2_1)
+        print("test2_1 done.")
+        print("")
+
+        print("Running test2_2")
+        res_state = cpu(test2_2)
+        print("test2_2 done.")
+        print("")
+
+        print("Running test2_3")
+        res_state = cpu(test2_3)
+        print("test2_3 done.")
+        print("")
+
+        print("Running test2_4")
+        res_state = cpu(test2_4)
+        print("test2_4 done.")
+        print("")
+
+        print("Running test2_5")
+        res_state = cpu(test2_5)
+        print("test2_5 done.")
+        print("")
+
+    else:
+        print("Running TEST program.")
+        res_state = cpu(TEST_program[:])
+        print("TEST program done.")
+        print("")
 
 
 #-------------------------------------------------------------------
