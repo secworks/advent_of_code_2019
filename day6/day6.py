@@ -73,24 +73,18 @@ def get_parents(me, orbits):
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
 def get_orbitals(santa, me):
-    print("Number of my orbitals: %d" % len(me))
-    print("Number of santas orbitals: %d" % len(santa))
-
     # Find common node.
     i = 0
     while santa[i] == me[i]:
         i += 1
-    i -= 1
-    print("Index for final common orbital: %d" % (i))
 
     # Calculate number of orbital transfers to common orbital.
-    my_orbits = len(me) - i - 2
-    santas_orbits = len(santa) - i - 2
+    # Subtract one from each number since we move betwwen orbitals.
+    my_orbitals = len(me) - i - 1
+    santas_orbitals = len(santa) - i - 1
 
     # Calculate total orbital trasfers.
-    total_orbits = my_orbits + santas_orbits
-    print("Total orbital transfers: %d" % total_orbits)
-
+    return my_orbitals + santas_orbitals
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
@@ -115,7 +109,8 @@ def problem2():
     my_orbits = build_tree("COM", 0, my_input)
     my_parents = get_parents("YOU", my_orbits)
 
-    get_orbitals(santa_parents, my_parents)
+    num_orbitals = get_orbitals(santa_parents, my_parents)
+    print("Total number of orbital tranfers: %d" % num_orbitals)
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
