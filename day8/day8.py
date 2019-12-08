@@ -16,6 +16,15 @@ def get_input(filename):
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
+def print_plane(plane):
+    for row in plane:
+        for c in row:
+            print(c, end = "")
+        print("")
+
+
+#-------------------------------------------------------------------
+#-------------------------------------------------------------------
 def get_planes(s):
     planes = []
     row = []
@@ -70,6 +79,20 @@ def get_one_two(plane):
     return ones * twos
 
 
+
+def get_image(planes):
+    image = [["x" for x in range(25)] for y in range(6)]
+
+    for plane in planes:
+        for y in range(6):
+            for x in range(25):
+                if plane[y][x] == "0" and image[y][x] == "x":
+                    image[y][x] = " "
+                if plane[y][x] == "1" and image[y][x] == "x":
+                    image[y][x] = "*"
+    return image
+
+
 #-------------------------------------------------------------------
 # problem1
 #-------------------------------------------------------------------
@@ -78,6 +101,7 @@ def problem1():
     my_input = get_input("day8_input.txt")
     my_planes = get_planes(my_input)
     zi = get_min_zero(my_planes)
+    print_plane(my_planes[zi])
     p1_res = get_one_two(my_planes[zi])
     print("Number of ones multiplies by number of twos: %d" % p1_res)
     print("")
@@ -88,7 +112,10 @@ def problem1():
 #-------------------------------------------------------------------
 def problem2():
     print("Problem 2")
-
+    my_input = get_input("day8_input.txt")
+    my_planes = get_planes(my_input)
+    my_image = get_image(my_planes)
+    print_plane(my_image)
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
