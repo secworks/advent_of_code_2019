@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 #=======================================================================
-# Solutions to Advent of Code 2019, day 7.
-# Based on day5.
+# Solutions to Advent of Code 2019, day 7, problem 2.
 #=======================================================================
 
 DEBUG = False
@@ -36,7 +35,7 @@ def read_operand(addr, mode, state):
 # cpu
 # Execute the program stored in the state. Starting at address 0.
 #-------------------------------------------------------------------
-def cpu(state, inputs):
+def cpu(ctx):
     # Opcodes
     OP_ADD  = 1
     OP_MUL  = 2
@@ -48,14 +47,16 @@ def cpu(state, inputs):
     OP_EQ   = 8
     OP_HALT = 99
 
-    outputs = 0
-    ic = 0
-    ip = 0
+    (exe_state, mem_state, ip, inp, outp) = ctx
     done = False
+
+    if exe_state == "idle":
+        ip = 0
+        exe_state = "running"
 
     while not done:
         # Instruction fetch and decode to get op and operand modes.
-        instr = state[ip]
+        instr = mem_state[ip]
         op = instr % 100
         dp("ip: %d, instr: %d" % (ip, instr))
         mode_a = int(instr / 100) & 0x01
@@ -65,46 +66,56 @@ def cpu(state, inputs):
         # Execute
         if op == OP_ADD:
             dp("\nOP_ADD")
-            opa = read_operand(ip + 1, mode_a, state)
-            opb = read_operand(ip + 2, mode_b, state)
-            dst = state[ip + 3]
+            opa = read_operand(ip + 1, mode_a, mem_state)
+            opb = read_operand(ip + 2, mode_b, mem_state)
+            dst = mem_state[ip + 3]
             dp("Writing %d to state[%d]" % (opa + opb, dst))
-            state[dst] = opa + opb
+            mem_state[dst] = opa + opb
             ip += 4
 
 
         if op == OP_MUL:
             dp("\nOP_MUL")
-            opa = read_operand(ip + 1, mode_a, state)
-            opb = read_operand(ip + 2, mode_b, state)
-            dst = state[ip + 3]
+            opa = read_operand(ip + 1, mode_a, mem_state)
+            opb = read_operand(ip + 2, mode_b, mem_state)
+            dst = mem_state[ip + 3]
             dp("Writing %d to state[%d]" % (opa * opb, dst))
-            state[dst] = opa * opb
+            mem_state[dst] = opa * opb
             ip += 4
 
 
         if op == OP_IN:
             dp("\nOP_IN")
-            i = inputs[ic]
-            ic += 1
-            dst = state[ip + 1]
-            state[dst] = i
-            dp("Got %d. Stored to state[%d]" % (i, dst))
-            ip += 2
+            if exe_state == "running":
+                dp("Need to get input.")
+                return ("waiting_in", mem_state, ip, 0, 0)
+            else:
+                dp("Input received, continuing.")
+                exe_state = "running"
+                i = inp
+                dst = mem_state[ip + 1]
+                mem_state[dst] = i
+                dp("Got %d. Stored to state[%d]" % (i, dst))
+                ip += 2
 
 
         if op == OP_OUT:
             dp("\nOP_OUT")
-            opa = read_operand(ip + 1, mode_a, state)
-            dp("Output: %d" % (opa))
-            outputs = opa
-            ip += 2
+            opa = read_operand(ip + 1, mode_a, mem_state)
+            if exe_state == "running":
+                dp("Need to send output.")
+                return ("waiting_out", mem_state, ip, 0, opa)
+            else:
+                dp("Output sent, continuing.")
+                exe_state = "running"
+                dp("Output: %d" % (opa))
+                ip += 2
 
 
         if op == OP_JNZ:
             dp("\nOP_JNZ")
-            opa = read_operand(ip + 1, mode_a, state)
-            opb = read_operand(ip + 2, mode_b, state)
+            opa = read_operand(ip + 1, mode_a, mem_state)
+            opb = read_operand(ip + 2, mode_b, mem_state)
             if opa != 0:
                 dp("opa != 0, jumping to addr %d" % (opb))
                 ip = opb
@@ -115,8 +126,8 @@ def cpu(state, inputs):
 
         if op == OP_JZ:
             dp("\nOP_JZ")
-            opa = read_operand(ip + 1, mode_a, state)
-            opb = read_operand(ip + 2, mode_b, state)
+            opa = read_operand(ip + 1, mode_a, mem_state)
+            opb = read_operand(ip + 2, mode_b, mem_state)
 
             if opa == 0:
                 ip = opb
@@ -128,30 +139,30 @@ def cpu(state, inputs):
 
         if op == OP_LT:
             dp("\nOP_LT")
-            opa = read_operand(ip + 1, mode_a, state)
-            opb = read_operand(ip + 2, mode_b, state)
+            opa = read_operand(ip + 1, mode_a, mem_state)
+            opb = read_operand(ip + 2, mode_b, mem_state)
             dst = state[ip + 3]
 
             if opa < opb:
-                state[dst] = 1
+                mem_state[dst] = 1
                 dp("opa < opb. Writing 1 to state[%d]" % (dst))
             else:
-                state[dst] = 0
+                mem_state[dst] = 0
                 dp("opa >= opb. Writing 0 to state[%d]" % (dst))
             ip += 4
 
 
         if op == OP_EQ:
             dp("\nOP_EQ")
-            opa = read_operand(ip + 1, mode_a, state)
-            opb = read_operand(ip + 2, mode_b, state)
-            dst = state[ip + 3]
+            opa = read_operand(ip + 1, mode_a, mem_state)
+            opb = read_operand(ip + 2, mode_b, mem_state)
+            dst = mem_state[ip + 3]
 
             if opa == opb:
-                state[dst] = 1
+                mem_state[dst] = 1
                 dp("opa == opb. Writing 1 to state[%d]" % (dst))
             else:
-                state[dst] = 0
+                mem_state[dst] = 0
                 dp("opa != opb. Writing 0 to state[%d]" % (dst))
             ip += 4
 
@@ -159,8 +170,7 @@ def cpu(state, inputs):
         if op == OP_HALT:
             dp("\nOP_HALT")
             done = True
-
-    return outputs
+            return ("done", mem_state, ip, 0, 0)
 
 
 #-------------------------------------------------------------------
@@ -189,55 +199,38 @@ def find_max(prog):
 
 
 #-------------------------------------------------------------------
+#-------------------------------------------------------------------
+def get_signal_feedback(program, phases):
+    ctx_a = ("idle", program[:], 0, 0, 0)
+    ctx_b = ("idle", program[:], 0, 0, 0)
+    ctx_c = ("idle", program[:], 0, 0, 0)
+    ctx_d = ("idle", program[:], 0, 0, 0)
+    ctx_e = ("idle", program[:], 0, 0, 0)
+
+#    loop_state = "init"
+#    while loop_state != "done":
+#        if loop_state == "init":
+#            (es_a, ms_a, ip_a, inp_a, outp_a) = cpu(ctx_a)
+#            if es_a == "waiting_in":
+#                (es_a, ms_a, ip_a, inp_a, outp_a) =
+#                cpu(("phase_in", ms_a, ip_a, phases[0], 0))
+#
+#                if es_a == "waiting_in":
+#                ctx_a = cpu(("zero_in", ms_a, 0, 0))
+
+
+#-------------------------------------------------------------------
 # problem1
-# Provide 1 as input.
-#-------------------------------------------------------------------
-def problem1():
-    TEST1 = False
-
-    print("Problem 1")
-    test_prog1_1 = [3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0]
-    test_phase1_1 = [4,3,2,1,0]
-
-    test_prog1_2 = [3,23,3,24,1002,24,10,24,1002,23,-1,23,
-                    101,5,23,23,1,24,23,23,4,23,99,0,0]
-    test_phase1_2 = [0,1,2,3,4]
-
-    test_prog1_3 = [3,31,3,32,1002,32,10,32,1001,31,-2,31,1007,
-                    31,0,33,1002,33,7,33,1,33,31,31,1,32,31,31,
-                    4,31,99,0,0,0]
-    test_phase1_3 = [1,0,4,3,2]
-
-    if (TEST1):
-        signal = get_signal(test_prog1_1, test_phase1_1)
-        print("Thrust signal from running test 1: %d" % signal)
-
-        signal = get_signal(test_prog1_2, test_phase1_2)
-        print("Thrust signal from running test 2: %d" % signal)
-
-        signal = get_signal(test_prog1_3, test_phase1_3)
-        print("Thrust signal from running test 3: %d" % signal)
-
-        (s, p) = find_max(test_prog1_1)
-        print(s, p)
-
-    else:
-        (s, p) = find_max(puzzle_prog)
-        print("Max signal %d." % (s))
-        print(p)
-        print("")
-
-#-------------------------------------------------------------------
-# problem2
-# Provide 5 as input.
 #-------------------------------------------------------------------
 def problem2():
+    TEST1 = False
+
     print("Problem 2")
+    print("")
 
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
-problem1()
 problem2()
 
 #=======================================================================
