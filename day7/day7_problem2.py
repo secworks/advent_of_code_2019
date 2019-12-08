@@ -35,7 +35,7 @@ def read_operand(addr, mode, state):
 # cpu
 # Execute the program stored in the state. Starting at address 0.
 #-------------------------------------------------------------------
-def cpu(ctx):
+def cpu(ctx, indata):
     # Opcodes
     OP_ADD  = 1
     OP_MUL  = 2
@@ -47,10 +47,10 @@ def cpu(ctx):
     OP_EQ   = 8
     OP_HALT = 99
 
-    (exe_state, mem_state, ip, inp, outp) = ctx
+    (exe_state, mem_state, ip) = ctx
     done = False
 
-    if exe_state == "idle":
+    if exe_state == "init":
         ip = 0
         exe_state = "running"
 
@@ -88,11 +88,11 @@ def cpu(ctx):
             dp("\nOP_IN")
             if exe_state == "running":
                 dp("Need to get input.")
-                return ("waiting_in", mem_state, ip, 0, 0)
+                return ("in", 0, ("wait_in", mem_state, ip))
             else:
                 dp("Input received, continuing.")
                 exe_state = "running"
-                i = inp
+                i = indata
                 dst = mem_state[ip + 1]
                 mem_state[dst] = i
                 dp("Got %d. Stored to state[%d]" % (i, dst))
@@ -104,7 +104,7 @@ def cpu(ctx):
             opa = read_operand(ip + 1, mode_a, mem_state)
             if exe_state == "running":
                 dp("Need to send output.")
-                return ("waiting_out", mem_state, ip, 0, opa)
+                return ("out", opa, ("wait_out", mem_state, ip))
             else:
                 dp("Output sent, continuing.")
                 exe_state = "running"
@@ -170,54 +170,97 @@ def cpu(ctx):
         if op == OP_HALT:
             dp("\nOP_HALT")
             done = True
-            return ("done", mem_state, ip, 0, 0)
-
-
-#-------------------------------------------------------------------
-#-------------------------------------------------------------------
-def get_signal(prog, phases):
-    signal = 0
-    for phase in phases:
-        tmp_prog = prog[:]
-        tmp_inputs = [phase, signal]
-        signal = cpu(tmp_prog, tmp_inputs)
-    return signal
-
-
-#-------------------------------------------------------------------
-#-------------------------------------------------------------------
-def find_max(prog):
-    max_signal = 0
-    phases = list(itertools.permutations([0, 1, 2, 3, 4]))
-    for phase in phases:
-        tmp_prog = prog[:]
-        signal = get_signal(tmp_prog, phase)
-        if signal > max_signal:
-            max_signal = signal
-            max_phase = phase
-    return (max_signal, max_phase)
+            return ("done", 0, (exe_state, mem_state, ip))
 
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
 def get_signal_feedback(program, phases):
-    ctx_a = ("idle", program[:], 0, 0, 0)
-    ctx_b = ("idle", program[:], 0, 0, 0)
-    ctx_c = ("idle", program[:], 0, 0, 0)
-    ctx_d = ("idle", program[:], 0, 0, 0)
-    ctx_e = ("idle", program[:], 0, 0, 0)
+    ctx_a = ("init", program[:], 0)
+    ctx_b = ("init", program[:], 0)
+    ctx_c = ("init", program[:], 0)
+    ctx_d = ("init", program[:], 0)
+    ctx_e = ("init", program[:], 0)
 
-#    loop_state = "init"
-#    while loop_state != "done":
-#        if loop_state == "init":
-#            (es_a, ms_a, ip_a, inp_a, outp_a) = cpu(ctx_a)
-#            if es_a == "waiting_in":
-#                (es_a, ms_a, ip_a, inp_a, outp_a) =
-#                cpu(("phase_in", ms_a, ip_a, phases[0], 0))
-#
-#                if es_a == "waiting_in":
-#                ctx_a = cpu(("zero_in", ms_a, 0, 0))
+    loop_state = "init"
+    a_in = 0
+    b_in = 0
+    c_in = 0
+    d_in = 0
+    e_in = 0
 
+    while loop_state != "done":
+        if loop_state == "init":
+            dp("Init of amplifier A")
+            (status, outdata, ctx_a) = cpu(ctx_a, 0)
+            (status, outdata, ctx_a) = cpu(ctx_a, phases[0])
+        dp("Running amplifier A with input %d" % a_in)
+        (status, outdata, ctx_a) = cpu(ctx_a, a_in)
+
+        if status == "out":
+            b_in = outdata
+
+        if loop_state == "init":
+            dp("Init of amplifier B")
+            (status, outdata, ctx_b) = cpu(ctx_b, 0)
+            (status, outdata, ctx_b) = cpu(ctx_b, phases[1])
+        dp("Running amplifier B with input %d" % b_in)
+        (status, outdata, ctx_b) = cpu(ctx_b, b_in)
+
+        if status == "out":
+            c_in = outdata
+
+        if loop_state == "init":
+            dp("Init of amplifier C")
+            (status, outdata, ctx_c) = cpu(ctx_c, 0)
+            (status, outdata, ctx_c) = cpu(ctx_c, phases[2])
+        dp("Running amplifier C with input %d" % c_in)
+        (status, outdata, ctx_c) = cpu(ctx_c, c_in)
+
+        if status == "out":
+            d_in = outdata
+
+        if loop_state == "init":
+            dp("Init of amplifier D")
+            (status, outdata, ctx_d) = cpu(ctx_d, 0)
+            (status, outdata, ctx_d) = cpu(ctx_d, phases[3])
+        dp("Running amplifier D with input %d" % d_in)
+        (status, outdata, ctx_d) = cpu(ctx_d, d_in)
+
+        if status == "out":
+            e_in = outdata
+
+        if loop_state == "init":
+            dp("Init of amplifier E")
+            (status, outdata, ctx_e) = cpu(ctx_e, 0)
+            (status, outdata, ctx_e) = cpu(ctx_e, phases[4])
+        dp("Running amplifier E with input %d" % e_in)
+        (status, outdata, ctx_e) = cpu(ctx_e, e_in)
+
+        if status == "out":
+            e_out = outdata
+            a_in = e_out
+
+        if status == "done":
+            dp("Received halt from Amplifier E. We are done.")
+            loop_state = "done"
+        else:
+            loop_state = "looping"
+
+    return e_out
+
+
+#-------------------------------------------------------------------
+#-------------------------------------------------------------------
+def find_max(program):
+    max_signal = 0
+    phases = list(itertools.permutations([5, 6, 7, 8, 9]))
+    for phase in phases:
+        signal = get_signal_feedback(program, phase)
+        if signal > max_signal:
+            max_signal = signal
+            max_phase = phase
+    return (max_signal, max_phase)
 
 #-------------------------------------------------------------------
 # problem1
@@ -226,8 +269,10 @@ def problem2():
     TEST1 = False
 
     print("Problem 2")
+    signal, phase = find_max(puzzle_prog)
+    print("received signal: %d" % signal)
+    print("Given by phase: ", phase)
     print("")
-
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
