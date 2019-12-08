@@ -92,12 +92,22 @@ def get_point(sega, segb):
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
+def get_min_manhattan(points):
+    min_manhattan = 10000000
+    for (x, y) in points:
+        distance = abs(x) + abs(y)
+        if  distance < min_manhattan:
+            min_manhattan = distance
+    return min_manhattan
+
+#-------------------------------------------------------------------
+#-------------------------------------------------------------------
 def problem1():
     print("Problem 1")
 
 #    my_wires = get_input("day3_testinput1.txt")
-    my_wires = get_input("day3_testinput2.txt")
-#    my_wires = get_input("day3_input1.txt")
+#   my_wires = get_input("day3_testinput2.txt")
+    my_wires = get_input("day3_input1.txt")
 
     wire0 = get_segments(my_wires[0].split(','))
     wire1 = get_segments(my_wires[1].split(','))
@@ -106,10 +116,10 @@ def problem1():
     for segment0 in wire0:
         for segment1 in wire1:
             if wires_crossed(segment0, segment1):
-                crosses.append(get_point(segment0, segment1))
-    print(len(crosses))
-    print(crosses)
-
+                point = get_point(segment0, segment1)
+                if point != (0, 0):
+                    crosses.append(point)
+    print(get_min_manhattan(crosses))
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
