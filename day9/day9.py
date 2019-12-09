@@ -46,11 +46,12 @@ def cpu(ctx, indata):
     OP_EQ   = 8
     OP_HALT = 99
 
-    (exe_state, mem_state, ip) = ctx
+    (exe_state, mem_state, ip, rb) = ctx
     done = False
 
     if exe_state == "init":
         ip = 0
+        rb = 0
         exe_state = "running"
 
     while not done:
@@ -87,7 +88,7 @@ def cpu(ctx, indata):
             dp("\nOP_IN")
             if exe_state == "running":
                 dp("Need to get input.")
-                return ("in", 0, ("wait_in", mem_state, ip))
+                return ("in", 0, ("wait_in", mem_state, ip, rb))
             else:
                 dp("Input received, continuing.")
                 exe_state = "running"
@@ -103,7 +104,7 @@ def cpu(ctx, indata):
             opa = read_operand(ip + 1, mode_a, mem_state)
             if exe_state == "running":
                 dp("Need to send output.")
-                return ("out", opa, ("wait_out", mem_state, ip))
+                return ("out", opa, ("wait_out", mem_state, ip, rb))
             else:
                 dp("Output sent, continuing.")
                 exe_state = "running"
@@ -169,13 +170,13 @@ def cpu(ctx, indata):
         if op == OP_HALT:
             dp("\nOP_HALT")
             done = True
-            return ("done", 0, (exe_state, mem_state, ip))
+            return ("done", 0, (exe_state, mem_state, ip, rb))
 
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
 def run_program(program):
-    ctx = ("init", program[:], 0)
+    ctx = ("init", program[:], 0, 0)
     status = "init"
 
     while status != "done":
