@@ -74,7 +74,7 @@ def cpu(ctx, indata):
             ip += 4
 
 
-        if op == OP_MUL:
+        elif op == OP_MUL:
             dp("\nOP_MUL")
             opa = read_operand(ip + 1, mode_a, mem_state)
             opb = read_operand(ip + 2, mode_b, mem_state)
@@ -84,7 +84,7 @@ def cpu(ctx, indata):
             ip += 4
 
 
-        if op == OP_IN:
+        elif op == OP_IN:
             dp("\nOP_IN")
             if exe_state == "running":
                 dp("Need to get input.")
@@ -99,7 +99,7 @@ def cpu(ctx, indata):
                 ip += 2
 
 
-        if op == OP_OUT:
+        elif op == OP_OUT:
             dp("\nOP_OUT")
             opa = read_operand(ip + 1, mode_a, mem_state)
             if exe_state == "running":
@@ -112,7 +112,7 @@ def cpu(ctx, indata):
                 ip += 2
 
 
-        if op == OP_JNZ:
+        elif op == OP_JNZ:
             dp("\nOP_JNZ")
             opa = read_operand(ip + 1, mode_a, mem_state)
             opb = read_operand(ip + 2, mode_b, mem_state)
@@ -124,7 +124,7 @@ def cpu(ctx, indata):
                 ip += 3
 
 
-        if op == OP_JZ:
+        elif op == OP_JZ:
             dp("\nOP_JZ")
             opa = read_operand(ip + 1, mode_a, mem_state)
             opb = read_operand(ip + 2, mode_b, mem_state)
@@ -137,7 +137,7 @@ def cpu(ctx, indata):
                 ip += 3
 
 
-        if op == OP_LT:
+        elif op == OP_LT:
             dp("\nOP_LT")
             opa = read_operand(ip + 1, mode_a, mem_state)
             opb = read_operand(ip + 2, mode_b, mem_state)
@@ -152,7 +152,7 @@ def cpu(ctx, indata):
             ip += 4
 
 
-        if op == OP_EQ:
+        elif op == OP_EQ:
             dp("\nOP_EQ")
             opa = read_operand(ip + 1, mode_a, mem_state)
             opb = read_operand(ip + 2, mode_b, mem_state)
@@ -167,10 +167,15 @@ def cpu(ctx, indata):
             ip += 4
 
 
-        if op == OP_HALT:
+        elif op == OP_HALT:
             dp("\nOP_HALT")
             done = True
             return ("done", 0, (exe_state, mem_state, ip, rb))
+
+        else:
+            dp("\nOP_UNKNOWN")
+            done = True
+            return ("error", 0, (exe_state, mem_state, ip, rb))
 
 
 #-------------------------------------------------------------------
@@ -180,11 +185,17 @@ def run_program(program):
     my_program.extend([0] * 1024)
     ctx = ("init", my_program, 0, 0)
     status = "init"
+    response = 0
 
     while status != "done":
         (status, outdata, ctx) = cpu(ctx, 0)
         if status == "out":
+            response = outdata
             dp(outdata)
+
+        if status == "error":
+            return False
+
     return response
 
 
