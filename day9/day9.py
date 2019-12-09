@@ -176,7 +176,9 @@ def cpu(ctx, indata):
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
 def run_program(program):
-    ctx = ("init", program[:], 0, 0)
+    my_program = program[:]
+    my_program.extend([0] * 1024)
+    ctx = ("init", my_program, 0, 0)
     status = "init"
 
     while status != "done":
