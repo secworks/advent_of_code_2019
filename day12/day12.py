@@ -5,6 +5,8 @@
 
 DEBUG = False
 
+import copy
+
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
@@ -128,43 +130,49 @@ def run_system(system, iterations):
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
-def get_key(system):
-    sig = ""
-    for i in range(4):
-        (pos, vel) = system[i]
-        sig += str(pos[0]) + " " + str(pos[1]) + " " + str(pos[2]) + " "
-        sig += str(vel[0]) + " " + str(vel[1]) + " " + str(vel[2])
-    return sig
+def cmp_systems(s1, s2):
+    (p10, v10) = s1[0]
+    (p11, v11) = s1[1]
+    (p12, v12) = s1[2]
+    (p13, v13) = s1[3]
+
+    (p20, v20) = s2[0]
+    (p21, v21) = s2[1]
+    (p22, v22) = s2[2]
+    (p23, v23) = s2[3]
+
+    if ((p10 == p20) and (p11 == p21) and (p12 == p22) and (p13 == p23) and
+        (v20 == [0, 0, 0]) and (v20 == [0, 0, 0]) and
+        (v22 == [0, 0, 0]) and (v23 == [0, 0, 0])):
+        return True
+    else:
+        return False
+
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
 def find_loop(system):
-    print("Trying tp find a loop for system.")
+    print("Trying to find a loop for system.")
+
+    original_system = copy.deepcopy(system)
 
     done = False
     i = 0
     seen = dict()
 
     while not done:
-        if (i > 0) and (i % 100000 == 0):
-            print("i = %d" % i)
-
-        key = get_key(system)
-        if key not in seen:
-            seen[key] = i
             system = update_planets(system)
+            done = cmp_systems(original_system, system)
             i += 1
-        else:
-            done = True
+            if (i % 1000000 == 0):
+                print("i = %d" % i)
 
-    print("Loop found at step %d. Collides with %d" % (i, seen[key]))
-    print(key)
+    print("Loop found at step %d." % (i))
 
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
 def prob1_test1():
-
     test_planets1 = [([-1,   0,  2], [0, 0, 0]),
                      ([ 2, -10, -7], [0, 0, 0]),
                      ([ 4,  -8,  8], [0, 0, 0]),
@@ -178,7 +186,6 @@ def prob1_test1():
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
 def prob1_test2():
-
     test_planets2 = [([-8, -10,  0], [0, 0, 0]),
                      ([ 5,   5, 10], [0, 0, 0]),
                      ([ 2,  -7,  3], [0, 0, 0]),
@@ -200,8 +207,8 @@ def problem1():
                   ([ 1,  7, -10], [0, 0, 0]),
                   ([16, -5,   3], [0, 0, 0])]
 
-    prob1_test1()
-    prob1_test2()
+#    prob1_test1()
+#    prob1_test2()
 
     print("Result for problem 1.")
     run_system(my_planets, 1000)
@@ -212,7 +219,6 @@ def problem1():
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
 def prob2_test1():
-
     test_planets1 = [([-1,   0,  2], [0, 0, 0]),
                      ([ 2, -10, -7], [0, 0, 0]),
                      ([ 4,  -8,  8], [0, 0, 0]),
@@ -225,7 +231,6 @@ def prob2_test1():
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
 def prob2_test2():
-
     test_planets2 = [([-8, -10,  0], [0, 0, 0]),
                      ([ 5,   5, 10], [0, 0, 0]),
                      ([ 2,  -7,  3], [0, 0, 0]),
@@ -238,16 +243,14 @@ def prob2_test2():
 # problem2
 #-------------------------------------------------------------------
 def problem2():
-    print("Problem 2")
-
-#    prob2_test1()
-#    prob2_test2()
-
     my_planets = [([14,  4,   5], [0, 0, 0]),
                   ([12, 10,   8], [0, 0, 0]),
                   ([ 1,  7, -10], [0, 0, 0]),
                   ([16, -5,   3], [0, 0, 0])]
+    print("Problem 2")
 
+#    prob2_test1()
+#    prob2_test2()
     find_loop(my_planets)
 
     print("")
