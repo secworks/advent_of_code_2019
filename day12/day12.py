@@ -7,6 +7,19 @@ DEBUG = False
 
 import copy
 
+#-------------------------------------------------------------------
+#-------------------------------------------------------------------
+def gcd(a, b):
+    while b > 0:
+        a, b = b, a % b
+    return a
+
+
+#-------------------------------------------------------------------
+#-------------------------------------------------------------------
+def lcm(a, b):
+    return (a*b)//gcd(a, b)
+
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
@@ -150,24 +163,57 @@ def cmp_systems(s1, s2):
 
 
 #-------------------------------------------------------------------
+# We process each axis individually.
 #-------------------------------------------------------------------
 def find_loop(system):
     print("Trying to find a loop for system.")
 
     original_system = copy.deepcopy(system)
 
+    [x0, y0, z0], [dx0, dy0, dz0] = system[0]
+    [x1, y1, z1], [dx1, dy1, dz1] = system[1]
+    [x2, y2, z2], [dx2, dy2, dz2] = system[2]
+    [x3, y3, z3], [dx3, dy3, dz3] = system[3]
+    xs = (x0, x1, x2, x3, dx0, dx1, dx2, dx3)
+    ys = (y0, y1, y2, y3, dy0, dy1, dy2, dy3)
+    zs = (z0, z1, z2, z3, dz0, dz1, dz2, dz3)
+
+    seenx = set()
+    seeny = set()
+    seenz = set()
+
+    seenx.add(xs)
+    seeny.add(ys)
+    seenz.add(zs)
+
     done = False
     i = 0
-    seen = dict()
 
     while not done:
-            system = update_planets(system)
-            done = cmp_systems(original_system, system)
             i += 1
-            if (i % 1000000 == 0):
-                print("i = %d" % i)
+            system = update_planets(system)
+            [x0, y0, z0], [dx0, dy0, dz0] = system[0]
+            [x1, y1, z1], [dx1, dy1, dz1] = system[1]
+            [x2, y2, z2], [dx2, dy2, dz2] = system[2]
+            [x3, y3, z3], [dx3, dy3, dz3] = system[3]
+            xs = (x0, x1, x2, x3, dx0, dx1, dx2, dx3)
+            ys = (y0, y1, y2, y3, dy0, dy1, dy2, dy3)
+            zs = (z0, z1, z2, z3, dz0, dz1, dz2, dz3)
 
-    print("Loop found at step %d." % (i))
+            if (xs in seenx) and (ys in seeny) and (zs in seenz):
+                done = True
+            else:
+                seenx.add(xs)
+                seeny.add(ys)
+                seenz.add(zs)
+
+    print("Loops found after %d steps." % (i))
+    print("x loop: %d" % (len(seenx)))
+    print("y loop: %d" % (len(seeny)))
+    print("z loop: %d" % (len(seenz)))
+
+    period = lcm(lcm(len(seenx), len(seeny)), len(seenz))
+    print("Total period: %d" % period)
 
 
 #-------------------------------------------------------------------
@@ -200,16 +246,13 @@ def prob1_test2():
 # problem1
 #-------------------------------------------------------------------
 def problem1():
-    print("Problem 1")
-
     my_planets = [([14,  4,   5], [0, 0, 0]),
                   ([12, 10,   8], [0, 0, 0]),
                   ([ 1,  7, -10], [0, 0, 0]),
                   ([16, -5,   3], [0, 0, 0])]
-
-#    prob1_test1()
-#    prob1_test2()
-
+    prob1_test1()
+    prob1_test2()
+    print("Problem 1")
     print("Result for problem 1.")
     run_system(my_planets, 1000)
     print("")
@@ -224,6 +267,7 @@ def prob2_test1():
                      ([ 4,  -8,  8], [0, 0, 0]),
                      ([ 3,   5, -1], [0, 0, 0])]
 
+    print("Test1 for problem 2.")
     find_loop(test_planets1)
     print("")
 
@@ -236,6 +280,7 @@ def prob2_test2():
                      ([ 2,  -7,  3], [0, 0, 0]),
                      ([ 9,  -8, -3], [0, 0, 0])]
 
+    print("Test2 for problem 2.")
     find_loop(test_planets2)
     print("")
 
@@ -247,12 +292,11 @@ def problem2():
                   ([12, 10,   8], [0, 0, 0]),
                   ([ 1,  7, -10], [0, 0, 0]),
                   ([16, -5,   3], [0, 0, 0])]
+
+    prob2_test1()
+    prob2_test2()
     print("Problem 2")
-
-#    prob2_test1()
-#    prob2_test2()
     find_loop(my_planets)
-
     print("")
 
 #-------------------------------------------------------------------
