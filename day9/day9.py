@@ -26,23 +26,22 @@ def dp(s):
         print(s)
 
 #-------------------------------------------------------------------
+# read_operand
 #-------------------------------------------------------------------
 def read_operand(addr, mode, state, rb):
-
     if mode == 2:
-        ind_addr = state[addr + rb]
+        ind_addr = state[addr] + rb
         op = state[ind_addr]
-        dp("operand = %d. Relative read from address %d" % (op, addr))
+        dp("operand = %d. Relative read from address %d" % (op, ind_addr))
 
     elif mode == 1:
-        op = state[addr]
-        dp("operand = %d. Immediate read from address %d" % (op, addr))
-
-    else:
-        ind_addr = state[addr + rb]
+        ind_addr = state[addr]
         op = state[ind_addr]
         dp("operand = %d. Position read from address %d" % (op, ind_addr))
 
+    else:
+        op = state[addr]
+        dp("operand = %d. Immediate read from address %d" % (op, addr))
     return op
 
 
@@ -75,31 +74,28 @@ def cpu(ctx, indata):
         # Instruction fetch and decode to get op and operand modes.
         instr = mem_state[ip]
         op = instr % 100
-        dp("ip: %d, instr: %d" % (ip, instr))
+        dp("ip: %d, rb: %d, instr: %d" % (ip, rb, instr))
         mode_a = int(instr / 100) & 0x03
         mode_b = int(instr / 1000)  & 0x03
         mode_c = int(instr / 10000) & 0x03
 
+        # Operand fetch
+        opa = read_operand(ip + 1, mode_a, mem_state, rb)
+        opb = read_operand(ip + 2, mode_b, mem_state, rb)
+        dst = read_operand(ip + 3, mode_c + 1, mem_state, rb)
+
         # Execute
         if op == OP_ADD:
             dp("\nOP_ADD")
-            opa = read_operand(ip + 1, mode_a, mem_state, rb)
-            opb = read_operand(ip + 2, mode_b, mem_state, rb)
-            dst = mem_state[ip + 3]
             dp("Writing %d to state[%d]" % (opa + opb, dst))
             mem_state[dst] = opa + opb
             ip += 4
 
-
         elif op == OP_MUL:
             dp("\nOP_MUL")
-            opa = read_operand(ip + 1, mode_a, mem_state, rb)
-            opb = read_operand(ip + 2, mode_b, mem_state, rb)
-            dst = mem_state[ip + 3]
             dp("Writing %d to state[%d]" % (opa * opb, dst))
             mem_state[dst] = opa * opb
             ip += 4
-
 
         elif op == OP_IN:
             dp("\nOP_IN")
@@ -110,11 +106,9 @@ def cpu(ctx, indata):
                 dp("Input received, continuing.")
                 exe_state = "running"
                 i = indata
-                dst = mem_state[ip + 1]
                 mem_state[dst] = i
                 dp("Got %d. Stored to state[%d]" % (i, dst))
                 ip += 2
-
 
         elif op == OP_OUT:
             dp("\nOP_OUT")
@@ -128,11 +122,8 @@ def cpu(ctx, indata):
                 dp("Output: %d" % (opa))
                 ip += 2
 
-
         elif op == OP_JNZ:
             dp("\nOP_JNZ")
-            opa = read_operand(ip + 1, mode_a, mem_state, rb)
-            opb = read_operand(ip + 2, mode_b, mem_state, rb)
             if opa != 0:
                 dp("opa != 0, jumping to addr %d" % (opb))
                 ip = opb
@@ -140,12 +131,8 @@ def cpu(ctx, indata):
                 dp("opa == 0, moving to next instruction")
                 ip += 3
 
-
         elif op == OP_JZ:
             dp("\nOP_JZ")
-            opa = read_operand(ip + 1, mode_a, mem_state, rb)
-            opb = read_operand(ip + 2, mode_b, mem_state, rb)
-
             if opa == 0:
                 ip = opb
                 dp("opa == 0, jumping to addr %d" % (opb))
@@ -153,13 +140,8 @@ def cpu(ctx, indata):
                 dp("opa != 0, moving to next instruction")
                 ip += 3
 
-
         elif op == OP_LT:
             dp("\nOP_LT")
-            opa = read_operand(ip + 1, mode_a, mem_state, rb)
-            opb = read_operand(ip + 2, mode_b, mem_state, rb)
-            dst = state[ip + 3]
-
             if opa < opb:
                 mem_state[dst] = 1
                 dp("opa < opb. Writing 1 to state[%d]" % (dst))
@@ -168,13 +150,8 @@ def cpu(ctx, indata):
                 dp("opa >= opb. Writing 0 to state[%d]" % (dst))
             ip += 4
 
-
         elif op == OP_EQ:
             dp("\nOP_EQ")
-            opa = read_operand(ip + 1, mode_a, mem_state, rb)
-            opb = read_operand(ip + 2, mode_b, mem_state, rb)
-            dst = mem_state[ip + 3]
-
             if opa == opb:
                 mem_state[dst] = 1
                 dp("opa == opb. Writing 1 to state[%d]" % (dst))
@@ -183,14 +160,11 @@ def cpu(ctx, indata):
                 dp("opa != opb. Writing 0 to state[%d]" % (dst))
             ip += 4
 
-
         elif op == OP_RB:
             dp("\nOP_RB")
-            opa = read_operand(ip + 1, mode_a, mem_state, rb)
             dp("Setting relative base to: %d" % (opa))
             rb = opa
             ip += 2
-
 
         elif op == OP_HALT:
             dp("\nOP_HALT")
@@ -201,27 +175,33 @@ def cpu(ctx, indata):
             dp("\nOP_UNKNOWN")
             done = True
             return ("error", 0, (exe_state, mem_state, ip, rb))
+        print("")
 
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
-def run_program(program):
+def run_program(program, inp):
     my_program = program[:]
+    # Extend with extra memory initialized to zero.
     my_program.extend([0] * 1024)
+
+    # Initialize the context.
     ctx = ("init", my_program, 0, 0)
     status = "init"
-    response = 0
+    response = []
 
+    # Run the program until done or error.
+    # Stora any output.
     while status != "done":
         (status, outdata, ctx) = cpu(ctx, 0)
         if status == "out":
-            response = outdata
+            response.append(outdata)
             dp(outdata)
 
         if status == "error":
-            return False
+            return (False, response)
 
-    return response
+    return (True, response)
 
 
 #-------------------------------------------------------------------
@@ -233,12 +213,13 @@ def problem1():
     tprog1_2 = [1102,34915192,34915192,7,4,7,99,0]
     tprog1_3 = [104,1125899906842624,99]
 
-    my_program = get_input("day9_input.txt")
-    print(my_program)
+#    my_program = get_input("day9_input.txt")
+#    print(my_program)
     print("Problem 1")
 
-#    if TEST1:
-#        res = run_program(tprog1_1)
+    if TEST1:
+        res = run_program(tprog1_1, [])
+        print("Result: ", res)
 #        res = run_program(tprog1_2)
 #        res = run_program(tprog1_3)
 
