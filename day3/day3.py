@@ -119,10 +119,34 @@ def get_crosses(wires):
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
-def get_wlen(crss, wire):
-    return 4
+def get_wlen(cross, wire):
+    cx, cy = cross
 
+    wlen = 0
+    for w in wire:
+        (d, p0, p1) = w
+        (x0, y0) = p0
+        (x1, y1) = p1
 
+        if d == "H":
+            if ((x0 <= cx <= x1) or (x1 <= cx <= x0)) and (cy == y0):
+                if x0 >= cx:
+                    wlen += abs(x0 - cx)
+                else:
+                    wlen += abs(cx - x0)
+                return wlen
+            else:
+                wlen += abs(x0 - x1)
+
+        if d == "V":
+            if ((y0 <= cy <= y1) or (y1 <= cy <= y0)) and (cx == x0):
+                if y0 >= cy:
+                    wlen += abs(y0 - cy)
+                else:
+                    wlen += abs(cy - y0)
+                return wlen
+            else:
+                wlen += abs(y1 - y0)
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
@@ -143,20 +167,27 @@ def problem1():
 def problem2():
     print("Problem 2")
 
-    my_wires = get_input("day3_testinput1.txt")
+#    my_wires = get_input("day3_testinput1.txt")
 #    my_wires = get_input("day3_testinput2.txt")
-#    my_wires = get_input("day3_input1.txt")
+    my_wires = get_input("day3_input1.txt")
 
     my_crosses = get_crosses(my_wires)
     wire0 = get_segments(my_wires[0].split(','))
     wire1 = get_segments(my_wires[1].split(','))
 
+    min_len = 100000
     for cross in my_crosses:
-        print("Getting wire lengths for cross ", cross)
         wlen0 = get_wlen(cross, wire0)
         wlen1 = get_wlen(cross, wire1)
-        print("Total wire length: %d" % (wlen0 + wlen1))
-        print("")
+
+        tot_len = wlen0 + wlen1
+        if (tot_len < min_len):
+            min_len = tot_len
+            min_cross = cross
+
+    print("Min total wire length: %d" % min_len)
+    print("Cross with min len:   ", min_cross)
+    print("")
 
 
 #-------------------------------------------------------------------
