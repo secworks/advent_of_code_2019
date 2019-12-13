@@ -100,17 +100,12 @@ def get_min_manhattan(points):
             min_manhattan = distance
     return min_manhattan
 
+
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
-def problem1():
-    print("Problem 1")
-
-#    my_wires = get_input("day3_testinput1.txt")
-#   my_wires = get_input("day3_testinput2.txt")
-    my_wires = get_input("day3_input1.txt")
-
-    wire0 = get_segments(my_wires[0].split(','))
-    wire1 = get_segments(my_wires[1].split(','))
+def get_crosses(wires):
+    wire0 = get_segments(wires[0].split(','))
+    wire1 = get_segments(wires[1].split(','))
 
     crosses = []
     for segment0 in wire0:
@@ -119,13 +114,49 @@ def problem1():
                 point = get_point(segment0, segment1)
                 if point != (0, 0):
                     crosses.append(point)
-    print(get_min_manhattan(crosses))
+    return crosses
+
+
+#-------------------------------------------------------------------
+#-------------------------------------------------------------------
+def get_wlen(crss, wire):
+    return 4
+
+
+
+#-------------------------------------------------------------------
+#-------------------------------------------------------------------
+def problem1():
+    print("Problem 1")
+
+#   my_wires = get_input("day3_testinput1.txt")
+#   my_wires = get_input("day3_testinput2.txt")
+
+    my_wires = get_input("day3_input1.txt")
+    my_crosses = get_crosses(my_wires)
+    print(get_min_manhattan(my_crosses))
+    print("")
+
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
 def problem2():
     print("Problem 2")
 
+    my_wires = get_input("day3_testinput1.txt")
+#    my_wires = get_input("day3_testinput2.txt")
+#    my_wires = get_input("day3_input1.txt")
+
+    my_crosses = get_crosses(my_wires)
+    wire0 = get_segments(my_wires[0].split(','))
+    wire1 = get_segments(my_wires[1].split(','))
+
+    for cross in my_crosses:
+        print("Getting wire lengths for cross ", cross)
+        wlen0 = get_wlen(cross, wire0)
+        wlen1 = get_wlen(cross, wire1)
+        print("Total wire length: %d" % (wlen0 + wlen1))
+        print("")
 
 
 #-------------------------------------------------------------------
