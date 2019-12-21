@@ -75,24 +75,28 @@ def cpu(ctx, indata):
         instr = mem_state[ip]
         op = instr % 100
         dp("ip: %d, rb: %d, instr: %d" % (ip, rb, instr))
-        mode_a = int(instr / 100) & 0x03
+        if len(str(instr)) > 2:
+            mode_a = int(str(instr)[ / 100) & 0x03
         mode_b = int(instr / 1000)  & 0x03
         mode_c = int(instr / 10000) & 0x03
 
         # Operand fetch
-        opa = read_operand(ip + 1, mode_a, mem_state, rb)
-        opb = read_operand(ip + 2, mode_b, mem_state, rb)
-        dst = read_operand(ip + 3, mode_c + 1, mem_state, rb)
 
         # Execute
         if op == OP_ADD:
             dp("\nOP_ADD")
+            opa = read_operand(ip + 1, mode_a, mem_state, rb)
+            opb = read_operand(ip + 2, mode_b, mem_state, rb)
+            dst = read_operand(ip + 3, mode_c + 1, mem_state, rb)
             dp("Writing %d to state[%d]" % (opa + opb, dst))
             mem_state[dst] = opa + opb
             ip += 4
 
         elif op == OP_MUL:
             dp("\nOP_MUL")
+            opa = read_operand(ip + 1, mode_a, mem_state, rb)
+            opb = read_operand(ip + 2, mode_b, mem_state, rb)
+            dst = read_operand(ip + 3, mode_c + 1, mem_state, rb)
             dp("Writing %d to state[%d]" % (opa * opb, dst))
             mem_state[dst] = opa * opb
             ip += 4
@@ -162,6 +166,7 @@ def cpu(ctx, indata):
 
         elif op == OP_RB:
             dp("\nOP_RB")
+            opa = read_operand(ip + 1, mode_a, mem_state, rb)
             dp("Setting relative base to: %d" % (opa))
             rb = opa
             ip += 2
@@ -209,7 +214,7 @@ def run_program(program, inp):
 #-------------------------------------------------------------------
 def problem1():
     TEST1 = True
-    tprog1_1 = [109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99]
+    tprog1_1 = [109,1,204,-1,1001,100,1,100,99,1008,100,16,101,1006,101,0,99]
     tprog1_2 = [1102,34915192,34915192,7,4,7,99,0]
     tprog1_3 = [104,1125899906842624,99]
 
