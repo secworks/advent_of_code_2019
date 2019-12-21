@@ -92,6 +92,32 @@ def problem1():
 #-------------------------------------------------------------------
 def problem2():
     print("Problem 2")
+    pattern = [0, 1, 0, -1]
+    test_input1 = [1, 2, 3, 4, 5, 6, 7, 8] * 10000
+    test_input2 = [8,0,8,7,1,2,2,4,5,8,5,9,1,4,5,4,6,6,1,9,0,8,3,2,1,8,6,4,5,5,9,5] * 10000
+    test_input3 = [1,9,6,1,7,8,0,4,2,0,7,2,0,2,2,0,9,1,4,4,9,1,6,0,4,4,1,8,9,9,1,7] * 10000
+    test_input4 = [6,9,3,1,7,1,6,3,4,9,2,9,4,8,6,0,6,3,3,5,9,9,5,9,2,4,3,1,9,8,7,3] * 10000
+    problem1_input = get_input("day16_input.txt")
+    problem1_input = problem1_input * 10000
+
+    print("Result of test1 after 4 phase calculations:")
+    print(l2s(calc_phase_n(test_input1, pattern, 4)))
+    print("")
+
+    print("Result of test2 after 100 phase calculations:")
+    print(l2s(calc_phase_n(test_input2, pattern, 100)))
+    print("")
+
+    print("Result of test3 after 100 phase calculations:")
+    print(l2s(calc_phase_n(test_input3, pattern, 100)))
+    print("")
+
+    print("Result of test4 after 100 phase calculations:")
+    print(l2s(calc_phase_n(test_input4, pattern, 100)))
+    print("")
+
+    print("Result of problem1 input after 100 phase calculations:")
+    print(l2s(calc_phase_n(problem1_input, pattern, 100)))
     print("")
 
 #-------------------------------------------------------------------
