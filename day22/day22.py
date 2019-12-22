@@ -8,8 +8,9 @@
 def get_input(filename):
     indata = []
     with open(filename,'r') as f:
-        line = f.read()
-    return [int(x) for x in line.strip()]
+        for line in f:
+            indata.append(line.strip())
+    return indata
 
 
 #-------------------------------------------------------------------
@@ -37,25 +38,18 @@ def increment(deck, inc):
 #-------------------------------------------------------------------
 def shuffle(deck, instructions):
     for i in instructions:
-        print(deck)
         if "deal into new stack" in i:
-            print("Reversing")
             deck.reverse()
 
 
         elif "cut" in i:
             pos = int(i.split(" ")[1])
-            print("Doing cut at pos %d" % pos)
             deck = deck[pos:] + deck[:pos]
 
 
         elif "deal with increment" in i:
             inc = int(i.split(" ")[3])
-            print("Deal with increment at %d" % inc)
             deck = increment(deck, inc)
-
-        else:
-            print("Unrecognized command: %s" % i)
     return deck
 
 
@@ -85,7 +79,12 @@ def problem1():
 #    assert(shuffle(test_deck1[:], test_instr2) == [3,0,7,4,1,8,5,2,9,6])
 #    assert(shuffle(test_deck1[:], test_instr3) == [6,3,0,7,4,1,8,5,2,9])
 #    assert(shuffle(test_deck1[:], test_instr4) == [9,2,5,8,1,4,7,0,3,6])
-    print("")
+
+    my_deck = [x for x in range(10007)]
+    my_instructions = get_input("day22_input.txt")
+    my_shuffled_deck = shuffle(my_deck, my_instructions)
+    print("Card 2019 is at position %d" % find_card(my_shuffled_deck, 2019))
+
 
 #-------------------------------------------------------------------
 # problem2
