@@ -34,58 +34,44 @@ def calc_bio_rating(state):
             r += 2**i
     return r
 
-#-------------------------------------------------------------------
-#-------------------------------------------------------------------
-def is_populated(x, y, state, width, height):
-    if x < 0 or x > width:
-        return False
-    if y < 0 or y > height:
-        return False
-
-    i = y * width + x
-    print(x, y, i)
-
-    if state[i] == "#":
-        return True
-    else:
-        return False
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
-def update_state(state, width):
-    height = int(len(state) / width)
-    new_state = ["."] * len(state)
-    done = False
-    x = 0
-    y = 0
-    while (x < width) and (y < height):
-        pop = 0
-        if is_populated((x - 1), y, state, width - 1, height - 1):
-            pop += 1
-        if is_populated((x + 1), y, state, width - 1, height - 1):
-            pop += 1
-        if is_populated(x, (y - 1), state, width - 1, height - 1):
-            pop += 1
-        if is_populated(x, (y + 1), state, width - 1, height - 1):
-            pop += 1
+def get_popcount(state, x, y):
+    cnt = 0
+    if state[y][(x - 1)] == "#":
+        cnt += 1
+    if state[y][(x + 1)] == "#":
+        cnt += 1
+    if state[(y - 1)][x] == "#":
+        cnt += 1
+    if state[(y + 1)][x] == "#":
+        cnt += 1
+    return cnt
 
-        i = width * y + x
 
-        if (state[i] == "#") and (pop == 1):
-            new_state[i] = "#"
-        else:
-            new_state[i] = "."
+#-------------------------------------------------------------------
+#-------------------------------------------------------------------
+def update_state(state):
+    height = len(state)
+    width = len(state[0])
 
-        if (state[i] == ".") and (1 <= pop <= 2):
-            new_state[i] = "#"
-        else:
-            new_state[i] = "."
+    ms = map_state_in_state(state)
+    new_state = get_empty_state(width, height)
 
-        x += 1
-        if x == width:
-            x = 0
-            y += 1
+    for y in range(1, (height + 1)):
+        for x in range(1, (width + 1)):
+            cnt = get_popcount(ms, x, y)
 
+            if (ms[y][x] == "#") and (cnt == 1):
+                new_state[(y - 1)][(x - 1)] = "#"
+            else:
+                new_state[(y - 1)][(x - 1)] = "."
+
+            if (ms[y][x] == ".") and (1 <= cnt <= 2):
+                new_state[(y - 1)][(x - 1)] = "#"
+            else:
+                new_state[(y - 1)][(x - 1)] = "."
     return new_state
 
 
@@ -153,9 +139,12 @@ def problem1():
                   ["#", ".", ".", ".", "."]]
 
     print_state(test_input)
-    print_state(get_empty_state(6, 6))
-    print_state(map_state_in_state(test_input))
-    print_state(extract_state_in_state(map_state_in_state(test_input)))
+    new_state = update_state(test_input)
+    print_state(new_state)
+
+#    print_state(get_empty_state(6, 6))
+#    print_state(map_state_in_state(test_input))
+#    print_state(extract_state_in_state(map_state_in_state(test_input)))
     print("")
 
 
