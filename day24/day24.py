@@ -29,9 +29,12 @@ def print_state(state):
 #-------------------------------------------------------------------
 def calc_bio_rating(state):
     r = 0
-    for i in range(len(state)):
-        if state[i] == "#":
-            r += 2**i
+    i = 0
+    for y in range(len(state)):
+        for x in range(len(state[0])):
+            if state[y][x] == "#":
+                r += 2**i
+            i += 1
     return r
 
 
@@ -57,7 +60,9 @@ def update_state(state):
     width = len(state[0])
 
     ms = map_state_in_state(state)
+    print_state(ms)
     new_state = get_empty_state(width, height)
+    print_state(new_state)
 
     for y in range(1, (height + 1)):
         for x in range(1, (width + 1)):
@@ -65,11 +70,13 @@ def update_state(state):
 
             if (ms[y][x] == "#") and (cnt == 1):
                 new_state[(y - 1)][(x - 1)] = "#"
-            else:
+
+            elif (ms[y][x] == "#"):
                 new_state[(y - 1)][(x - 1)] = "."
 
-            if (ms[y][x] == ".") and (1 <= cnt <= 2):
+            elif (ms[y][x] == ".") and (1 <= cnt <= 2):
                 new_state[(y - 1)][(x - 1)] = "#"
+
             else:
                 new_state[(y - 1)][(x - 1)] = "."
     return new_state
@@ -78,21 +85,26 @@ def update_state(state):
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
 def find_loop(state):
-    width = 5
     seen = set()
-    while True:
-        state = update_state(state, width)
-        sv = calc_bio_rating(state)
-        if sv not in seen:
-            seen.add(sv)
-        else:
-            return sv
+    br = calc_bio_rating(state)
+    seen.add(br)
+    loop = False
 
+    while not loop:
+        state = update_state(state)
+        br = calc_bio_rating(state)
+
+        if br not in seen:
+            seen.add(br)
+        else:
+            print("Found loop. Biodiversity: %d:" % br)
+            print_state(state)
+            loop = True
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
 def get_empty_state(width, height):
-    return [["."] * width] * height
+    return [["." for x in range(width)] for y in range(height)]
 
 
 #-------------------------------------------------------------------
@@ -138,13 +150,7 @@ def problem1():
                   [".", ".", "#", ".", "."],
                   ["#", ".", ".", ".", "."]]
 
-    print_state(test_input)
-    new_state = update_state(test_input)
-    print_state(new_state)
-
-#    print_state(get_empty_state(6, 6))
-#    print_state(map_state_in_state(test_input))
-#    print_state(extract_state_in_state(map_state_in_state(test_input)))
+    find_loop(my_input)
     print("")
 
 
