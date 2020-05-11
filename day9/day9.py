@@ -75,10 +75,9 @@ def cpu(ctx, indata):
         instr = mem_state[ip]
         op = instr % 100
         dp("ip: %d, rb: %d, instr: %d" % (ip, rb, instr))
-        if len(str(instr)) > 2:
-            mode_a = int(str(instr)[ / 100) & 0x03
-        mode_b = int(instr / 1000)  & 0x03
-        mode_c = int(instr / 10000) & 0x03
+        mode_a = int(instr / 100) % 10
+        mode_b = int(instr / 1000)  % 10
+        mode_c = int(instr / 10000) % 10
 
         # Operand fetch
 
