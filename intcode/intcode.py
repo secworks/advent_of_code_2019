@@ -70,6 +70,37 @@ class Intcode():
                 self.ip += 4
 
 
+            elif (opcode == 3):
+                if (self.state == "run"):
+                    if (self.debug):
+                        print("Input instruction executed. Require indata")
+                    self.state == "input"
+                    return(self.state, 0)
+                elif (self.state == "input"):
+                    if (self.debug):
+                        print("Input instruction executed. Indata received.")
+                    if (indata == None):
+                        print("Error: No input given.")
+                        self.state == "error"
+                        return(self.state, 1)
+                    self.mem[param1] = indata
+                    self.state == "run"
+                    self.ip += 2
+
+
+            elif (opcode == 4):
+                if (self.state == "run"):
+                    if (self.debug):
+                        print("Output instruction executed. Outputting data.")
+                    self.state == "output"
+                    return(self.state, self.mem[param1])
+                elif (self.state == "output"):
+                    if (self.debug):
+                        print("Output instruction executed. Returned from output.")
+                    self.state == "run"
+                    self.ip += 2
+
+
             elif (opcode == 99):
                 if (self.debug):
                     print("Halt instruction executed.")
@@ -81,7 +112,7 @@ class Intcode():
                 if (self.debug):
                     print("Unknown instruction %d executed" % opcode)
                 self.state = "unknown"
-                return (self.state, opcode)
+                Return (self.state, opcode)
 
 
 #-------------------------------------------------------------------
