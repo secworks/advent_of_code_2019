@@ -41,13 +41,17 @@ class Intcode():
         return (self.state, 0)
 
 
+    def log(self, s):
+        if self.debug:
+            print(s)
+
+
     def run(self, indata = None):
-        if (self.debug):
-            if (self.state == "idle"):
-                print("Starting to execute program in memory")
-                self.state = "run"
-            else:
-                print("Continue to execute program in memory.")
+        if (self.state == "idle"):
+            self.log("Starting to execute program in memory")
+            self.state = "run"
+        else:
+            self.log("Continue to execute program in memory.")
 
 
         while(self.state != "halt"):
@@ -57,28 +61,25 @@ class Intcode():
             param3 = self.mem[self.ip + 3]
 
             if (opcode == 1):
-                if (self.debug):
-                    print("Add instruction executed.")
+                self.log("Add instruction executed.")
                 self.mem[param3] = self.mem[param1] + self.mem[param2]
                 self.ip += 4
 
 
             elif (opcode == 2):
-                if (self.debug):
-                    print("Mult instruction executed.")
+                self.log("Mult instruction executed.")
                 self.mem[param3] = self.mem[param1] * self.mem[param2]
                 self.ip += 4
 
 
             elif (opcode == 3):
                 if (self.state == "run"):
-                    if (self.debug):
-                        print("Input instruction executed. Require indata")
+                    self.log("Input instruction executed. Require indata")
                     self.state == "input"
                     return(self.state, 0)
+
                 elif (self.state == "input"):
-                    if (self.debug):
-                        print("Input instruction executed. Indata received.")
+                    self.log("Input instruction executed. Indata %d received." % indata)
                     if (indata == None):
                         print("Error: No input given.")
                         self.state == "error"
@@ -90,27 +91,23 @@ class Intcode():
 
             elif (opcode == 4):
                 if (self.state == "run"):
-                    if (self.debug):
-                        print("Output instruction executed. Outputting data.")
+                    self.log("Output instruction executed. Outputting data.")
                     self.state == "output"
                     return(self.state, self.mem[param1])
                 elif (self.state == "output"):
-                    if (self.debug):
-                        print("Output instruction executed. Returned from output.")
+                    self.log("Output instruction executed. Returned from output.")
                     self.state == "run"
                     self.ip += 2
 
 
             elif (opcode == 99):
-                if (self.debug):
-                    print("Halt instruction executed.")
+                self.log("Halt instruction executed.")
                 self.state = "halt"
                 return (self.state, 0)
 
 
             else:
-                if (self.debug):
-                    print("Unknown instruction %d executed" % opcode)
+                self.log("Unknown instruction %d executed" % opcode)
                 self.state = "unknown"
                 Return (self.state, opcode)
 
