@@ -59,6 +59,9 @@ class Intcode():
             param1 = self.mem[self.ip + 1]
             param2 = self.mem[self.ip + 2]
             param3 = self.mem[self.ip + 3]
+            param4 = self.mem[self.ip + 4]
+            self.log("ip: %08d, base: %08d, opcode: %04d, param1: %08d, param2: %08d, param3: %08d, param4: %08d" %\
+                     (self.ip, self.base, opcode, param1, param2, param3, param4))
 
             if (opcode == 1):
                 self.log("Add instruction executed.")
