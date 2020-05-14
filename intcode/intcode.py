@@ -45,6 +45,56 @@ class Intcode():
         if self.debug:
             print(s)
 
+    def get_opcode(self, instr):
+        self.log("instr: %s" % instr)
+        if instr == 1:
+            return "op_add"
+        if instr == 2:
+            return "op_mul"
+        if instr == 3:
+            return "op_in"
+        if instr == 4:
+            return "op_out"
+        if instr == 99:
+            return "op_hlt"
+        return "op_err"
+
+
+    def decode(self):
+        instr = str(self.mem[self.ip])
+        pm1 = 0
+        pm2 = 0
+        pm3 = 0
+
+        if len(instr) == 1:
+            opcode = self.get_opcode(int(instr))
+
+        if len(instr) >= 2:
+            opcode = self.get_opcode(int(instr[-1:]))
+
+        if len(instr) >= 3:
+            pm1 = int(instr[-2])
+
+        if len(instr) >= 4:
+            pm2 = int(instr[-3])
+
+        if len(instr) == 5:
+            pm3 = int(instr[-4])
+
+        self.log("decode: instr: %s, opcode: %s, pm1: %01d, pm2: %01d, pm3: %01d" %\
+                 (instr, opcode, pm1, pm2, pm3))
+        return (opcode, pm1, pm2, pm3)
+
+
+
+    def op_fetch(self, i, mode):
+        ptr = self.mem[self.ip + i]
+        if mode == 0:
+            return self.mem[ptr]
+
+        if mode == 1:
+            return ptr
+
 
     def run(self, indata = None):
         if (self.state == "idle"):
@@ -55,27 +105,30 @@ class Intcode():
 
 
         while(self.state != "halt"):
-            opcode = self.mem[self.ip]
-            param1 = self.mem[self.ip + 1]
-            param2 = self.mem[self.ip + 2]
-            param3 = self.mem[self.ip + 3]
-            param4 = self.mem[self.ip + 4]
-            self.log("ip: %08d, base: %08d, opcode: %04d, param1: %08d, param2: %08d, param3: %08d, param4: %08d" %\
-                     (self.ip, self.base, opcode, param1, param2, param3, param4))
+            self.log("ip: %04d, base: %04d" % (self.ip, self.base))
+            (opcode, pm1, pm2, pm3) = self.decode()
 
-            if (opcode == 1):
-                self.log("Add instruction executed.")
-                self.mem[param3] = self.mem[param1] + self.mem[param2]
+            if (opcode == "op_add"):
+                opa = self.op_fetch(1, pm1)
+                opb = self.op_fetch(1, pm2)
+                dst = self.op_fetch(1, pm3)
+                res = opa + opb
+                self.mem[dst] = res
+                self.log("ADD: %08d + %08d = %08d -> mem[%08d]" % (opa, opb, res, dst))
                 self.ip += 4
 
 
-            elif (opcode == 2):
-                self.log("Mult instruction executed.")
-                self.mem[param3] = self.mem[param1] * self.mem[param2]
+            if (opcode == "op_mul"):
+                opa = self.op_fetch(1, pm1)
+                opb = self.op_fetch(1, pm2)
+                dst = self.op_fetch(1, pm3)
+                res = opa * opb
+                self.mem[dst] = res
+                self.log("MUL: %08d * %08d = %08d -> mem[%08d]" % (opa, opb, res, dst))
                 self.ip += 4
 
 
-            elif (opcode == 3):
+            if (opcode == "op_in"):
                 if (self.state == "run"):
                     self.log("Input instruction executed. Require indata")
                     self.state == "input"
@@ -87,32 +140,32 @@ class Intcode():
                         print("Error: No input given.")
                         self.state == "error"
                         return(self.state, 1)
-                    self.mem[param1] = indata
+                    self.mem[opa_addr] = indata
                     self.state == "run"
                     self.ip += 2
 
 
-            elif (opcode == 4):
+            if (opcode == "op_out"):
                 if (self.state == "run"):
                     self.log("Output instruction executed. Outputting data.")
                     self.state == "output"
-                    return(self.state, self.mem[param1])
+                    return(self.state, self.mem[opa_addr])
                 elif (self.state == "output"):
                     self.log("Output instruction executed. Returned from output.")
                     self.state == "run"
                     self.ip += 2
 
 
-            elif (opcode == 99):
+            if (opcode == "op_hlt"):
                 self.log("Halt instruction executed.")
                 self.state = "halt"
                 return (self.state, 0)
 
 
-            else:
-                self.log("Unknown instruction %d executed" % opcode)
+            if (opcode == "op_err"):
+                self.log("Unknown instruction %s executed" % opcode)
                 self.state = "unknown"
-                Return (self.state, opcode)
+                return (self.state, opcode)
 
 
 #-------------------------------------------------------------------
