@@ -61,30 +61,15 @@ class Intcode():
 
 
     def decode(self):
-        instr = str(self.mem[self.ip])
-        pm1 = 0
-        pm2 = 0
-        pm3 = 0
+        instr = self.mem[self.ip]
+        opcode = self.get_opcode(instr % 100)
+        pm1 = int(instr / 100) % 10
+        pm2 = int(instr / 1000) % 10
+        pm3 = int(instr / 10000) % 10
 
-        if len(instr) == 1:
-            opcode = self.get_opcode(int(instr))
-
-        if len(instr) >= 2:
-            opcode = self.get_opcode(int(instr[-1:]))
-
-        if len(instr) >= 3:
-            pm1 = int(instr[-2])
-
-        if len(instr) >= 4:
-            pm2 = int(instr[-3])
-
-        if len(instr) == 5:
-            pm3 = int(instr[-4])
-
-        self.log("decode: instr: %s, opcode: %s, pm1: %01d, pm2: %01d, pm3: %01d" %\
+        self.log("decode: instr: %06d, opcode: %s, pm1: %01d, pm2: %01d, pm3: %01d" %\
                  (instr, opcode, pm1, pm2, pm3))
         return (opcode, pm1, pm2, pm3)
-
 
 
     def op_fetch(self, i, mode):
@@ -110,8 +95,8 @@ class Intcode():
 
             if (opcode == "op_add"):
                 opa = self.op_fetch(1, pm1)
-                opb = self.op_fetch(1, pm2)
-                dst = self.op_fetch(1, pm3)
+                opb = self.op_fetch(2, pm2)
+                dst = self.op_fetch(3, pm3)
                 res = opa + opb
                 self.mem[dst] = res
                 self.log("ADD: %08d + %08d = %08d -> mem[%08d]" % (opa, opb, res, dst))
@@ -120,8 +105,8 @@ class Intcode():
 
             if (opcode == "op_mul"):
                 opa = self.op_fetch(1, pm1)
-                opb = self.op_fetch(1, pm2)
-                dst = self.op_fetch(1, pm3)
+                opb = self.op_fetch(2, pm2)
+                dst = self.op_fetch(3, pm3)
                 res = opa * opb
                 self.mem[dst] = res
                 self.log("MUL: %08d * %08d = %08d -> mem[%08d]" % (opa, opb, res, dst))
@@ -200,14 +185,15 @@ def run_test(prog, expected):
             print("Got:", my_intcode.mem[0 : len(prog)])
     print("")
 
+
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
 def selftest():
     run_test([1,0,0,0,99],          [2,0,0,0,99])
-    run_test([2,3,0,3,99],          [2,3,0,6,99])
-    run_test([2,4,4,5,99,0],        [2,4,4,5,99,9801])
-    run_test([1,1,1,4,99,5,6,0,99], [30,1,1,4,2,5,6,0,99])
-    run_day2_1()
+#    run_test([2,3,0,3,99],          [2,3,0,6,99])
+#    run_test([2,4,4,5,99,0],        [2,4,4,5,99,9801])
+#    run_test([1,1,1,4,99,5,6,0,99], [30,1,1,4,2,5,6,0,99])
+#    run_day2_1()
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
