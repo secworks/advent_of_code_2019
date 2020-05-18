@@ -126,7 +126,8 @@ class Intcode():
                         print("Error: No input given.")
                         self.state == "error"
                         return(self.state, 1)
-                    self.mem[opa_addr] = indata
+                    dst = self.mem[(self.ip + 1)]
+                    self.mem[dst] = indata
                     self.state == "run"
                     self.ip += 2
 
@@ -135,7 +136,8 @@ class Intcode():
                 if (self.state == "run"):
                     self.log("Output instruction executed. Outputting data.")
                     self.state == "output"
-                    return(self.state, self.mem[opa_addr])
+                    opa = self.op_fetch(1, pm1)
+                    return(self.state, self.mem[opa])
                 elif (self.state == "output"):
                     self.log("Output instruction executed. Returned from output.")
                     self.state == "run"
@@ -178,7 +180,16 @@ def run_test(prog, expected):
 def day5_tests():
     print("Running tests related to day5 Intcode functionality")
     run_test([1002,4,3,4,33], [1002,4,3,4,99])
+    run_test([1101,100,-1,4,0], [1101,100,-1,4,99])
     print("")
+
+    print("Test with input:")
+    my_intcode = Intcode(16)
+    my_response = my_intcode.load([3,0,4,0,99])
+    (response, value) = my_intcode.run()
+    print(response, value)
+    (response, value) = my_intcode.run(1)
+    print(response, value)
 
 
 #-------------------------------------------------------------------
