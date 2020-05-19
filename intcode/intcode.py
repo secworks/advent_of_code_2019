@@ -137,9 +137,8 @@ class Intcode():
             if (opcode == "op_out"):
                 if (self.state == "run"):
                     self.state = "wait_output"
-                    opa = self.op_fetch(1, pm1)
-                    outdata = self.mem[opa]
-                    self.log("Output instruction executed. Outputting %d from %d." % (outdata, opa))
+                    outdata = self.op_fetch(1, pm1)
+                    self.log("Output instruction executed. Outputting %d." % (outdata))
                     return(self.state, outdata)
 
                 elif (self.state == "wait_output"):
