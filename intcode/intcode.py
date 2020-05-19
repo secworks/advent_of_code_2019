@@ -117,30 +117,34 @@ class Intcode():
             if (opcode == "op_in"):
                 if (self.state == "run"):
                     self.log("Input instruction executed. Require indata")
-                    self.state == "input"
+                    self.state = "wait_input"
                     return(self.state, 0)
 
-                elif (self.state == "input"):
-                    self.log("Input instruction executed. Indata %d received." % indata)
+                elif (self.state == "wait_input"):
+                    self.log("Input instruction continued.")
                     if (indata == None):
                         print("Error: No input given.")
                         self.state == "error"
                         return(self.state, 1)
+
                     dst = self.mem[(self.ip + 1)]
                     self.mem[dst] = indata
-                    self.state == "run"
+                    self.log("Input %d stored in %d." % (indata, dst))
+                    self.state = "run"
                     self.ip += 2
 
 
             if (opcode == "op_out"):
                 if (self.state == "run"):
-                    self.log("Output instruction executed. Outputting data.")
-                    self.state == "output"
+                    self.state = "wait_output"
                     opa = self.op_fetch(1, pm1)
-                    return(self.state, self.mem[opa])
-                elif (self.state == "output"):
-                    self.log("Output instruction executed. Returned from output.")
-                    self.state == "run"
+                    outdata = self.mem[opa]
+                    self.log("Output instruction executed. Outputting %d from %d." % (outdata, opa))
+                    return(self.state, outdata)
+
+                elif (self.state == "wait_output"):
+                    self.log("Output instruction countinued.")
+                    self.state = "run"
                     self.ip += 2
 
 
@@ -187,9 +191,11 @@ def day5_tests():
     my_intcode = Intcode(16)
     my_response = my_intcode.load([3,0,4,0,99])
     (response, value) = my_intcode.run()
-    print(response, value)
+    print("Returned from execution 1:", response, value)
     (response, value) = my_intcode.run(1)
-    print(response, value)
+    print("Returned from execution 2:", response, value)
+    (response, value) = my_intcode.run()
+    print("Returned from execution 3:", response, value)
 
 
 #-------------------------------------------------------------------
@@ -222,7 +228,7 @@ def day2_tests():
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
 def selftest():
-    day2_tests()
+#    day2_tests()
     day5_tests()
 
 
