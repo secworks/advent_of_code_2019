@@ -158,20 +158,47 @@ class Intcode():
 
 
             if (opcode == "op_jnz"):
-                self.ip += 2
+                opa = self.op_fetch(1, pm1)
+                opb = self.op_fetch(2, pm2)
+                self.log("JNZ: opa: %d, opb: %d" % (opa, opb))
+                if opa:
+                    self.ip = opb
+                else:
+                    self.ip += 3
 
 
             if (opcode == "op_jez"):
-                self.ip += 2
+                opa = self.op_fetch(1, pm1)
+                opb = self.op_fetch(2, pm2)
+                self.log("JEZ: opa: %d, opb: %d" % (opa, opb))
+                if not opa:
+                    self.ip = opb
+                else:
+                    self.ip += 3
 
 
             if (opcode == "op_lt"):
-                self.ip += 2
-
+                opa = self.op_fetch(1, pm1)
+                opb = self.op_fetch(2, pm2)
+                dst = self.mem[(self.ip + 3)]
+                self.log("LT: opa: %d, opb: %d, dst: %d" % (opa, opb, dst))
+                if opa < opb:
+                    self.mem[dst] = 1
+                else:
+                    self.mem[dst] = 0
+                self.ip += 4
 
 
             if (opcode == "op_eq"):
-                self.ip += 2
+                opa = self.op_fetch(1, pm1)
+                opb = self.op_fetch(2, pm2)
+                dst = self.mem[(self.ip + 3)]
+                self.log("EQ: opa: %d, opb: %d, dst: %d" % (opa, opb, dst))
+                if opa == opb:
+                    self.mem[dst] = 1
+                else:
+                    self.mem[dst] = 0
+                self.ip += 4
 
 
             if (opcode == "op_hlt"):
