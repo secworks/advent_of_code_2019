@@ -55,6 +55,16 @@ class Intcode():
             return "op_in"
         if instr == 4:
             return "op_out"
+        if instr == 4:
+            return "op_out"
+        if instr == 5:
+            return "op_jnz"
+        if instr == 6:
+            return "op_jez"
+        if instr == 7:
+            return "op_lt"
+        if instr == 4:
+            return "op_eq"
         if instr == 99:
             return "op_hlt"
         return "op_err"
@@ -145,6 +155,23 @@ class Intcode():
                     self.log("Output instruction countinued.")
                     self.state = "run"
                     self.ip += 2
+
+
+            if (opcode == "op_jnz"):
+                self.ip += 2
+
+
+            if (opcode == "op_jez"):
+                self.ip += 2
+
+
+            if (opcode == "op_lt"):
+                self.ip += 2
+
+
+
+            if (opcode == "op_eq"):
+                self.ip += 2
 
 
             if (opcode == "op_hlt"):
