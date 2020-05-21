@@ -209,7 +209,7 @@ class Intcode():
 
             if (opcode == "op_err"):
                 self.log("Unknown instruction %s executed" % opcode)
-                self.state = "unknown"
+                self.state = "err_unknown"
                 return (self.state, opcode)
 
 
