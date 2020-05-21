@@ -55,16 +55,16 @@ class Intcode():
             return "op_in"
         if instr == 4:
             return "op_out"
-        if instr == 4:
-            return "op_out"
         if instr == 5:
             return "op_jnz"
         if instr == 6:
             return "op_jez"
         if instr == 7:
             return "op_lt"
-        if instr == 4:
+        if instr == 8:
             return "op_eq"
+        if instr == 9:
+            return "op_rb"
         if instr == 99:
             return "op_hlt"
         return "op_err"
@@ -89,6 +89,11 @@ class Intcode():
 
         if mode == 1:
             return ptr
+
+        if mode == 2:
+            ptr += self.base
+            return self.mem[ptr]
+
 
 
     def run(self, indata = None):
@@ -199,6 +204,12 @@ class Intcode():
                 else:
                     self.mem[dst] = 0
                 self.ip += 4
+
+
+            if (opcode == "op_rb"):
+                rb = self.mem[(self.ip + 1)]
+                self.log("RB: rb: %d, old base: %d, new base:: %d" % (rb, self.base, self.base + rb))
+                self.base += rb
 
 
             if (opcode == "op_hlt"):
