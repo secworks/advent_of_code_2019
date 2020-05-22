@@ -208,7 +208,7 @@ class Intcode():
 
             if (opcode == "op_rb"):
                 rb = self.mem[(self.ip + 1)]
-                self.log("RB: rb: %d, old base: %d, new base:: %d" % (rb, self.base, self.base + rb))
+                self.log("RB: rb: %d, old base: %d, new base: %d" % (rb, self.base, self.base + rb))
                 self.base += rb
 
 
