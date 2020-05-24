@@ -64,7 +64,7 @@ def get_ore(r, name):
 #-------------------------------------------------------------------
 def problem1():
     print("Problem 1")
-    my_input = get_input("day14_example1.txt")
+    my_input = get_input("examples/day14_example1.txt")
     my_db = build_db(my_input)
     get_ore(my_db, "FUEL")
     print("")
