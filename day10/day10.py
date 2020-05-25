@@ -3,6 +3,10 @@
 # Solutions to Advent of Code 2019, day 10.
 #=======================================================================
 
+DEBUG = True
+
+from math import gcd
+
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
 def get_input(filename):
@@ -39,24 +43,34 @@ def find_all_asteroids(board):
 # The coordinates are order by distance to the start coordinate.
 #-------------------------------------------------------------------
 def get_coords(x0, y0, x1, y1):
-    coords = []
+    if DEBUG:
+        print("get_coords: (%d, %d) -> (%d, %d)" % (x0, y0, x1, y1))
 
-    # Handle the case when we are on a horizontal line.
-    if y0 == y1:
-        if x0 < x1:
-            return [(x, y0) for x in range((x0 + 1), (x1 + 1))]
-        else:
-            return [(x, y0) for x in range((x0 - 1), (x1 - 1), -1)]
+    points = gcd(abs(x1 - x0), abs(y1 - y0))
+    dx = (x1 - x0) / points
+    dy = (y1 - y0) / points
+    return [(int(x0 + r * dx), int(y0 + r*dy)) for r in range(1, (points + 1))]
 
-    # Handle the case when we are on a vertical line.
-    if x0 == x1:
-        if y0 < 1:
-            return [(x0, y) for y in range((y0 + 1), (y1 + 1))]
-        else:
-            return [(x0, y) for y in range((y0 - 1), (y1 - 1), -1)]
 
-    return coords
+#-------------------------------------------------------------------
+#-------------------------------------------------------------------
+def test_get_coords():
+    print(get_coords(1, 1, 1, 4))
+    print("")
+    print(get_coords(1, 4, 1, 1))
+    print("")
 
+    print(get_coords(3, 3, 12, 3))
+    print("")
+    print(get_coords(12, 3, 3, 3))
+    print("")
+
+    print(get_coords(1, 9, 8, 16))
+    print("")
+    print(get_coords(8, 16, 1, 9))
+    print("")
+    print(get_coords(0, 0, 4, 16))
+    print("")
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
@@ -83,7 +97,8 @@ def problem2():
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
-problem1()
+test_get_coords()
+#problem1()
 #problem2()
 
 #=======================================================================
