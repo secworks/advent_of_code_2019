@@ -34,6 +34,31 @@ def find_all_asteroids(board):
 
 
 #-------------------------------------------------------------------
+# Generate a list of all coordinates to check between the
+# start coordinate (x0, y0) and the end coordinate (x0. y0).
+# The coordinates are order by distance to the start coordinate.
+#-------------------------------------------------------------------
+def get_coords(x0, y0, x1, y1):
+    coords = []
+
+    # Handle the case when we are on a horizontal line.
+    if y0 == y1:
+        if x0 < x1:
+            return [(x, y0) for x in range((x0 + 1), (x1 + 1))]
+        else:
+            return [(x, y0) for x in range((x0 - 1), (x1 - 1), -1)]
+
+    # Handle the case when we are on a vertical line.
+    if x0 == x1:
+        if y0 < 1:
+            return [(x0, y) for y in range((y0 + 1), (y1 + 1))]
+        else:
+            return [(x0, y) for y in range((y0 - 1), (y1 - 1), -1)]
+
+    return coords
+
+
+#-------------------------------------------------------------------
 #-------------------------------------------------------------------
 def problem1():
     print("Problem 1")
