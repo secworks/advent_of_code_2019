@@ -38,6 +38,21 @@ def find_all_asteroids(board):
 
 
 #-------------------------------------------------------------------
+# Generate the list of edgepoints for an area.
+#-------------------------------------------------------------------
+def get_edgepoints(dimx, dimy):
+    edgepoints = []
+
+    edgepoints.extend([(0, y) for y in range(dimy)])
+    edgepoints.extend([((dimx - 1), y) for y in range(dimy)])
+
+    edgepoints.extend([(x, 0) for x in range(dimx)])
+    edgepoints.extend([(x, (dimy - 1)) for x in range(dimx)])
+
+    return edgepoints
+
+
+#-------------------------------------------------------------------
 # Generate a list of all coordinates to check between the
 # start coordinate (x0, y0) and the end coordinate (x0. y0).
 # The coordinates are order by distance to the start coordinate.
@@ -53,7 +68,15 @@ def get_coords(x0, y0, x1, y1):
     points = gcd(abs(x1 - x0), abs(y1 - y0))
     dx = (x1 - x0) / points
     dy = (y1 - y0) / points
-    return [(int(x0 + r * dx), int(y0 + r*dy)) for r in range(1, (points + 1))]
+    return [(int(x0 + r * dx), int(y0 + r * dy)) for r in range(1, (points + 1))]
+
+
+#-------------------------------------------------------------------
+#-------------------------------------------------------------------
+def test_get_edgepoints():
+    print(get_edgepoints(2, 2))
+    print(get_edgepoints(5, 5))
+
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
@@ -103,7 +126,8 @@ def problem2():
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
-test_get_coords()
+#test_get_coords()
+test_get_edgepoints()
 
 #problem1()
 #problem2()
