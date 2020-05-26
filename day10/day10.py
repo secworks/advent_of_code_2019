@@ -46,11 +46,14 @@ def get_coords(x0, y0, x1, y1):
     if DEBUG:
         print("get_coords: (%d, %d) -> (%d, %d)" % (x0, y0, x1, y1))
 
+    # Check if we are trying to draw to the same point.
+    if (x0 == x1) and (y0 == y1):
+        return []
+
     points = gcd(abs(x1 - x0), abs(y1 - y0))
     dx = (x1 - x0) / points
     dy = (y1 - y0) / points
     return [(int(x0 + r * dx), int(y0 + r*dy)) for r in range(1, (points + 1))]
-
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
@@ -71,6 +74,9 @@ def test_get_coords():
     print("")
     print(get_coords(0, 0, 4, 16))
     print("")
+    print(get_coords(0, 0, 0, 0))
+    print("")
+
 
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
@@ -98,6 +104,7 @@ def problem2():
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
 test_get_coords()
+
 #problem1()
 #problem2()
 
