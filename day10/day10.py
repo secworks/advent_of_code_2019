@@ -72,6 +72,29 @@ def get_coords(x0, y0, x1, y1):
 
 
 #-------------------------------------------------------------------
+# Given a point, get all points to check on a board.
+# Note that the points returned are ordered as a list of lists.
+# Each list contains zero, one or more points. The points
+# in a given list should be evaluated in order.
+#-------------------------------------------------------------------
+def get_points_for_point(x0, y0, dimx, dimy):
+    edgepoints = get_edgepoints(dimx, dimy)
+    my_points = []
+    for point in edgepoints:
+        (x1, y1) = point
+        my_points.append(get_coords(x0, y0, x1, y1))
+    return my_points
+
+
+#-------------------------------------------------------------------
+#-------------------------------------------------------------------
+def test_points_for_points():
+    my_points = get_points_for_point(1, 2, 4, 4)
+    for line in my_points:
+        for point in line:
+            print(point)
+
+#-------------------------------------------------------------------
 #-------------------------------------------------------------------
 def test_get_edgepoints():
     print(get_edgepoints(2, 2))
@@ -127,7 +150,8 @@ def problem2():
 #-------------------------------------------------------------------
 #-------------------------------------------------------------------
 #test_get_coords()
-test_get_edgepoints()
+#test_get_edgepoints()
+test_points_for_points()
 
 #problem1()
 #problem2()
